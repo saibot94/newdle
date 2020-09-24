@@ -39,8 +39,6 @@ jobs:
           make config
           make .venv
           pip install -q -e '.[dev]' 
-          echo NEWDLE_TEST_DATABASE_URI="postgresql://newdletest@localhost:${{ job.services.postgres.ports[5432] }}/newdle_tests" \
-            >> newdle/newdle.cfg
 
       - name: Activate virtualenv for later steps
         run: |
@@ -56,7 +54,7 @@ jobs:
           createuser newdletest
           createdb newdle_tests
           conn_string="postgresql://newdletest@localhost:${{ job.services.postgres.ports[5432] }}/newdle_tests"
-          sed -i "s/SQLALCHEMY_DATABASE_URI = .*/SQLALCHEMY_DATABASE_URI = '$conn_string'/g" newdle/newdle.cfg
+          sed -i "s%SQLALCHEMY_DATABASE_URI = .*%SQLALCHEMY_DATABASE_URI = '$conn_string'%g" newdle/newdle.cfg
 
       - name: Get list of created migrations
         if: success() || failure()
