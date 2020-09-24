@@ -1,0 +1,62 @@
+name: SQL changes
+
+on:
+  push:
+    branches: [master, sql-actions]
+  pull_request:
+    branches: [master, sql-actions]
+
+jobs:
+  print_sql_upgrades:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+
+      - name: Activate virtualenv for later steps
+        run: |
+          echo "::set-env name=VIRTUAL_ENV::$(pwd)/.venv"
+          echo "::add-path::$(pwd)/.venv/bin"
+          
+
+      - name: Get list of created migrations
+        if: success() || failure()
+        uses: ThiefMaster/changed-files-action@json-output
+        with:
+          repo-token: ${{ github.token }}
+          pattern: '^newdle/migrations/versions/.+\.py$'
+      
+      - name: Print changed migrations
+        if: success() || failure()
+        run: |
+          echo $(jq '.[]' ~/files_created.json)
+
+      # - name: Create comment
+      #   uses: peter-evans/create-or-update-comment@v1
+      #   with:
+      #     issue-number: 1
+      #     body: |
+      #       This is a multi-line test comment
+      #       - With GitHub **Markdown** :sparkles:
+      #       - Created by [create-or-update-comment][1]
+
+      #       [1]: https://github.com/peter-evans/create-or-update-comment
+      #     reactions: '+1'
