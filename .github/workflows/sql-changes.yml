@@ -71,8 +71,9 @@ jobs:
           if [[ -z ${migration_file} ]]; then 
             down_revision=$(grep -Po "(?<=^down_revision = ').*(?=')" $migration_file );
             revision=$(grep -Po "(?<=^revision = ').*(?=')" $migration_file );
-
+            echo "Showing SQL script for migrations: $down_revision -> $revision";
             output=$(flask db upgrade --sql ${down_revision}:${revision});
+            echo $output;
             echo "::set-env name=COMMENT_SQL::${output}"
           else 
             exit 0;
@@ -86,7 +87,7 @@ jobs:
             This PR contains database changes. Before merging it, make sure to apply the migration in production:
 
             ```sql
-            ${COMMENT_SQL}
+            ${{env.COMMENT_SQL}}
             ```
 
             When reviewing the PR, make sure that the changes will not break the previously deployed
