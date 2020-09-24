@@ -67,8 +67,7 @@ jobs:
         run: |
           flask db upgrade;
           migration_file=$(jq -r '.[-1] // empty' ~/files_created.json);
-          if [ -z ]
-          sql_command=$(./ci/print_revision_sql.sh $migration_file);
+          sql_command=$(sh ci/print_revision_sql.sh $migration_file);
           if [ $sql_command ] ; then
             sql_command="${sql_command//'%'/'%25'}";
             sql_command="${sql_command//$'\n'/'%0A'}";
