@@ -56,8 +56,8 @@ jobs:
       - name: Print changed migrations
         if: success() || failure()
         run: |
-          files=$(jq '.[]' ~/files_created.json)
-          forea 
+          files=$(jq -r '.[-1]' ~/files_created.json)
+          echo $files; 
 
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v1
