@@ -1,12 +1,8 @@
 name: SQL changes
 
 on:
-  # push:
-  #   branches: [master, sql-actions]
   pull_request:
     branches: [master, sql-actions]
-  # pull_request_target:
-  #   types: [opened]
 
 jobs:
   print_sql_upgrades:
@@ -68,7 +64,7 @@ jobs:
           flask db upgrade;
           migration_file=$(jq -r '.[-1] // empty' ~/files_created.json);
           sql_command=$(sh ci/print_revision_sql.sh $migration_file);
-          if [ $sql_command ] ; then
+          if [[ ! -z "$sql_command" ]] ; then
             sql_command="${sql_command//'%'/'%25'}";
             sql_command="${sql_command//$'\n'/'%0A'}";
             sql_command="${sql_command//$'\r'/'%0D'}"; 
