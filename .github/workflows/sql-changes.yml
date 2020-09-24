@@ -68,7 +68,7 @@ jobs:
         run: |
           flask db upgrade;
           migration_file=$(jq -r '.[-1] // empty' ~/files_created.json);
-          if [[ -z ${migration_file} ]]; then 
+          if [ ! -z ${migration_file} ]; then 
             down_revision=$(grep -Po "(?<=^down_revision = ').*(?=')" $migration_file );
             revision=$(grep -Po "(?<=^revision = ').*(?=')" $migration_file );
             echo "Showing SQL script for migrations: $down_revision -> $revision";
