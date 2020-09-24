@@ -43,7 +43,7 @@ jobs:
 
       - name: Setup Database
         run: |
-          sudo apt-get install postgresql-client libpq-dev
+          sudo apt-get install -y -qq postgresql-client libpq-dev
           export PGHOST=localhost
           export PGPORT=${{ job.services.postgres.ports[5432] }}
           export PGUSER=postgres
