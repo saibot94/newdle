@@ -1,14 +1,18 @@
 name: SQL changes
 
 on:
-  push:
-    branches: [master, sql-actions]
+  # push:
+  #   branches: [master, sql-actions]
   pull_request:
     branches: [master, sql-actions]
+  # pull_request_target:
+  #   types: [opened]
 
 jobs:
   print_sql_upgrades:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
     strategy:
       matrix:
         python-version: [3.8]
@@ -30,6 +34,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Setup venv and config file
+        run: |
+          make config
+          make .venv
+          pip install -q -e '.[dev]' 
 
       - name: Activate virtualenv for later steps
         run: |
@@ -47,16 +56,21 @@ jobs:
       - name: Print changed migrations
         if: success() || failure()
         run: |
-          echo $(jq '.[]' ~/files_created.json)
+          files=$(jq '.[]' ~/files_created.json)
+          forea 
 
-      # - name: Create comment
-      #   uses: peter-evans/create-or-update-comment@v1
-      #   with:
-      #     issue-number: 1
-      #     body: |
-      #       This is a multi-line test comment
-      #       - With GitHub **Markdown** :sparkles:
-      #       - Created by [create-or-update-comment][1]
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{github.event.number}}
+          body: |
+            This PR contains database changes. Before merging it, make sure to apply the migration in production:
 
-      #       [1]: https://github.com/peter-evans/create-or-update-comment
-      #     reactions: '+1'
+            ```sql
+            <sql here>
+            ```
+
+            When reviewing the PR, make sure that the changes will not break the previously deployed
+            version, i.e. any new column needs to have a `server_default` or be nullable.
+            
+          reactions: 'eyes'
