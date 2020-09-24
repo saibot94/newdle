@@ -1,4 +1,4 @@
-name: SQL changes
+name: Print alembic migrations SQL
 
 on:
   pull_request:
