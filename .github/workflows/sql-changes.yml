@@ -67,18 +67,13 @@ jobs:
         run: |
           flask db upgrade;
           migration_file=$(jq -r '.[-1] // empty' ~/files_created.json);
-          if [ ! -z ${migration_file} ]; then 
-            down_revision=$(grep -Po "(?<=^down_revision = ').*(?=')" $migration_file );
-            revision=$(grep -Po "(?<=^revision = ').*(?=')" $migration_file );
-            echo "Showing SQL script for migrations: $down_revision -> $revision";
-            sql_command=$(flask db upgrade --sql ${down_revision}:${revision});
-            echo $sql_command;
-            sql_command="${sql_command//'%'/'%25'}"
-            sql_command="${sql_command//$'\n'/'%0A'}"
-            sql_command="${sql_command//$'\r'/'%0D'}" 
-            echo ::set-output name=body::$sql_command
-          else 
-            exit 0;
+          if [ -z ]
+          sql_command=$(./ci/print_revision_sql.sh $migration_file);
+          if [ $sql_command ] ; then
+            sql_command="${sql_command//'%'/'%25'}";
+            sql_command="${sql_command//$'\n'/'%0A'}";
+            sql_command="${sql_command//$'\r'/'%0D'}"; 
+            echo ::set-output name=body::$sql_command 
           fi
 
       - name: Create comment
@@ -95,5 +90,3 @@ jobs:
 
             When reviewing the PR, make sure that the changes will not break the previously deployed
             version, i.e. any new column needs to have a `server_default` or be nullable.
-
-          reactions: 'eyes'
