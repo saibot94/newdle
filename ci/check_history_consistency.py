@@ -45,4 +45,7 @@ def _check_history_consistency():
 
 
 if __name__ == '__main__':
+    import os
+
+    print(os.environ)
     _check_history_consistency()
